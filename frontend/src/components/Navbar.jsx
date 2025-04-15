@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { assets } from '../assets/assets';
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../styles/Navbar.css'; 
+import '../styles/navbar.css'; 
 import Doctors from '../pages/Doctors';
 
 const Navbar = () => {
