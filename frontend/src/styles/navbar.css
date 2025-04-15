@@ -1,0 +1,9 @@
+.nav-link {
+    position: relative;
+    text-decoration: none;
+  }
+  
+  .nav-link.active hr {
+    display: block;  /* Show the line only for active links */
+  }
+  
