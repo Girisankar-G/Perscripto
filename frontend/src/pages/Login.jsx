@@ -1,15 +1,41 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
+import { AppContext } from '../context/AppContext'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const Login = () => {
-  const [state, setState] = useState('') // 'Login' or 'Sign Up'
+
+  const {backendUrl,token,setToken}=useContext(AppContext)
+
+  const [state, setState] = useState('Sign Up')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
 
   const onSubmitHandler = async (event) => {
     event.preventDefault()
-    // You can add your API call logic here
-    console.log({ name, email, password })
+    try {
+      if(state==='Sign Up'){
+        const {data}=await axios.post(`${backendUrl}/api/user/register`,(name,password,email))
+        if(data.success){
+          localStorage.setItem('token',data.token)
+          setToken(data.token)
+        } else{
+          toast.error(data.message)
+        }
+      }
+      else{
+        const {data}=await axios.post(`${backendUrl}/api/user/login`,{password,email})
+        if(data.success){
+          localStorage.setItem('token',data.token)
+          setToken(data.token)
+        } else{
+          toast.error(data.message)
+        }
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   return (
@@ -26,7 +52,7 @@ const Login = () => {
             <input
               className='border border-zinc-300 rounded w-full p-2 mt-1'
               type='text'
-              onChange={(e) => setName(e.target.value)} // 🔧 FIXED
+              onChange={(e) => setName(e.target.value)} 
               value={name}
               required
             />

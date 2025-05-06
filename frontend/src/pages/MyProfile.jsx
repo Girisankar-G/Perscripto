@@ -1,42 +1,83 @@
-import React, { useState } from 'react'
-import { assets } from '../assets/assets'
+import React, { useState, useContext } from 'react';
+import { AppContext } from '../context/AppContext';
+import { assets } from '../assets/assets';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const MyProfile = () => {
-  const [userData, setUserData] = useState({
-    name: 'Edward Vincent',
-    image: assets.profile_pic,
-    email: 'edwardvincent@gmail.com',
-    phone: '+1 123 456 7890',
-    address: {
-      line1: "57th Cross, Rishmond",
-      line2: "Circle, Church Road, London"
-    },
-    gender: 'Male',
-    docb: '2000-01-20'
-  })
+  const { userData, setUserData, token, backendUrl, loadUserProfileData } = useContext(AppContext);
 
-  const [isEdit, setIsEdit] = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [selectedGender, setSelectedGender] = useState(userData.gender)
+  const [isEdit, setIsEdit] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedGender, setSelectedGender] = useState(userData.gender);
+  const [image, setImage] = useState(null);
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
   const handleGenderChange = (gender) => {
-    setSelectedGender(gender)
-    setUserData(prev => ({ ...prev, gender }))
-    setDropdownOpen(false)
-  }
+    setSelectedGender(gender);
+    setUserData(prev => ({ ...prev, gender }));
+    setDropdownOpen(false);
+  };
 
-  return (
+  const updateUserProfileData = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('name', userData.name);
+      formData.append('phone', userData.phone);
+      formData.append('gender', userData.gender);
+      formData.append('dob', userData.dob);
+      formData.append('address', JSON.stringify(userData.address));
+      image && formData.append('image', image);
+
+      const {data}=await axios.post(`${backendUrl}/api/user/update-profile`, formData, {headers: {token}});
+      if (data.success) {
+        toast.success(data.message)
+        await loadUserProfileData(); 
+        setIsEdit(false);
+        setImage(false)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message)
+    }
+  };
+
+  return userData && (
     <div className="min-h-screen flex justify-center items-start pt-20 pb-20 bg-gradient-to-br from-blue-50 to-blue-100 text-gray-700">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-xl">
         
         {/* Profile Image + Name */}
         <div className="flex flex-col items-center gap-4">
-          <img
-            src={userData.image}
-            alt="profile"
-            className="w-28 h-28 rounded-full object-cover border-4 border-[#5f6fff] shadow-sm"
-          />
+          {isEdit ? (
+            <label htmlFor="image" className="cursor-pointer relative">
+              <img
+                src={image ? URL.createObjectURL(image) : userData.image}
+                alt="profile"
+                className="w-28 h-28 rounded-full object-cover border-4 border-[#5f6fff] shadow-sm"
+              />
+              <img
+                src={assets.upload_icon}
+                alt="upload"
+                className="absolute bottom-0 right-0 w-8 h-8"
+              />
+              <input
+                type="file"
+                id="image"
+                hidden
+                onChange={(e) => setImage(e.target.files[0])}
+              />
+            </label>
+          ) : (
+            <img
+              src={userData.image}
+              alt="profile"
+              className="w-28 h-28 rounded-full object-cover border-4 border-[#5f6fff] shadow-sm"
+            />
+          )}
+
           {isEdit ? (
             <input
               type="text"
@@ -118,43 +159,23 @@ const MyProfile = () => {
                   onClick={toggleDropdown}
                 >
                   <p className="text-sm">{selectedGender}</p>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="w-5 h-5 text-gray-500"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" className="w-5 h-5 text-gray-500">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
 
                 {dropdownOpen && (
                   <div className="absolute mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
-                    <div
-                      className="p-2 hover:bg-[#f0f4ff] cursor-pointer"
-                      onClick={() => handleGenderChange('Male')}
-                    >
-                      Male
-                    </div>
-                    <div
-                      className="p-2 hover:bg-[#f0f4ff] cursor-pointer"
-                      onClick={() => handleGenderChange('Female')}
-                    >
-                      Female
-                    </div>
-                    <div
-                      className="p-2 hover:bg-[#f0f4ff] cursor-pointer"
-                      onClick={() => handleGenderChange('Other')}
-                    >
-                      Other
-                    </div>
-                    <div
-                      className="p-2 hover:bg-[#f0f4ff] cursor-pointer"
-                      onClick={() => handleGenderChange('Prefer not to say')}
-                    >
-                      Prefer not to say
-                    </div>
+                    {['Male', 'Female', 'Other', 'Prefer not to say'].map((gender) => (
+                      <div
+                        key={gender}
+                        className="p-2 hover:bg-[#f0f4ff] cursor-pointer"
+                        onClick={() => handleGenderChange(gender)}
+                      >
+                        {gender}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -168,12 +189,12 @@ const MyProfile = () => {
             {isEdit ? (
               <input
                 type="date"
-                value={userData.docb}
-                onChange={(e) => setUserData(prev => ({ ...prev, docb: e.target.value }))}
+                value={userData.dob}
+                onChange={(e) => setUserData(prev => ({ ...prev, dob: e.target.value }))}
                 className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-[#5f6fff] bg-white text-gray-700 shadow-sm"
               />
             ) : (
-              <p>{userData.docb}</p>
+              <p>{userData.dob}</p>
             )}
           </div>
         </div>
@@ -181,7 +202,7 @@ const MyProfile = () => {
         {/* Edit / Save Button */}
         <div className="mt-8 text-center">
           <button
-            onClick={() => setIsEdit(!isEdit)}
+            onClick={isEdit ? updateUserProfileData : () => setIsEdit(true)}
             className="bg-[#5f6fff] hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300"
           >
             {isEdit ? 'Save' : 'Edit Profile'}
@@ -189,7 +210,7 @@ const MyProfile = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MyProfile
+export default MyProfile;

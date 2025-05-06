@@ -31,25 +31,22 @@ const Doctors = () => {
         
         {/* Specialities List */}
         <div>
-        {[
-          'General physician',
-          'Gynecologist',
-          'Dermatologist',
-          'Pediatricians',
-          'Neurologist',
-          'Gastroenterologist'
-        ].map((spec, i) => (
-          <p
-            onClick={() => navigate(speciality === spec ? '/doctors' : `/doctors/${spec}`)}
-            key={i}
-            className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer mb-2 hover:bg-gray-100 ${
-              speciality === spec ? 'bg-blue-100 font-medium' : ''
-            }`}
-          >
-            {spec}
-          </p>
-        ))}
-
+          {[
+            'General physician',
+            'Gynecologist',
+            'Dermatologist',
+            'Pediatricians',
+            'Neurologist',
+            'Gastroenterologist'
+          ].map((spec, i) => (
+            <p
+              onClick={() => navigate(speciality === spec ? '/doctors' : `/doctors/${spec}`)}
+              key={i}
+              className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer mb-2 hover:bg-gray-100 ${speciality === spec ? 'bg-blue-100 font-medium' : ''}`}
+            >
+              {spec}
+            </p>
+          ))}
         </div>
 
         {/* Doctors Grid */}
@@ -58,7 +55,7 @@ const Doctors = () => {
             <div
               onClick={() => navigate(`/appointment/${item._id}`)}
               key={index}
-              className="flex flex-col border border-blue-200 rounded-xl overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105 shadow-sm hover:shadow-lg bg-white"
+              className={`flex flex-col border rounded-xl overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105 shadow-sm hover:shadow-lg bg-white ${item.available ? 'border-green-500' : 'border-red-500'}`}
             >
               <div className="flex-1">
                 <img
@@ -68,9 +65,9 @@ const Doctors = () => {
                 />
               </div>
               <div className="p-4">
-                <div className="flex items-center gap-2 text-sm text-green-500 mb-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <p>Available</p>
+                <div className={`flex items-center gap-2 text-sm mb-1 ${item.available ? 'text-green-500' : 'text-red-500'}`}>
+                  <span className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                  <p>{item.available ? 'Available' : 'Not Available'}</p>
                 </div>
                 <p className="text-gray-900 text-lg font-medium">{item.name}</p>
                 <p className="text-gray-600 text-sm">{item.speciality}</p>
